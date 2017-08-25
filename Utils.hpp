@@ -21,3 +21,4 @@ struct Vec3d{
         this->y = iY;
     }
 };
+
