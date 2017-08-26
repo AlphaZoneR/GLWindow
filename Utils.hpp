@@ -1,5 +1,5 @@
 #pragma once
-
+#include <glm/glm.hpp>
 struct Vec2d{
     float x, y;
 
@@ -22,3 +22,9 @@ struct Vec3d{
     }
 };
 
+
+namespace Utils{
+    glm::mat4x4 create_perspecitve_projection(float, float, float , float);
+    glm::mat4x4 create_perspective_projection_from_bounds(float, float, float, float, float, float);
+    glm::mat4x4 create_look_at(glm::vec3, glm::vec3, glm::vec3);
+}

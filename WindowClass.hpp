@@ -1,3 +1,4 @@
+#pragma once
 #define _WIN32_WINNT 0x0500
 
 #include <windows.h>
@@ -5,17 +6,23 @@
 #include <string.h>
 #include <tchar.h>
 #include "Utils.hpp"
+#include "RenderableVertexArray.hpp"
 #include <string>
 #include <iostream>
-
-
+#include <vector>
+#include <ctime>
 
 // Include glew
-#include <Gl/glew.h>
+#define GLEW_STATIC
+#include <GL/glew.h>
+#include <GL/wglew.h>
 
 
 //Include OpenGL
 #include <GL/gl.h>
+#include <GL/glext.h>
+#include <GL/glu.h>
+#include <GL/wglew.h>
 
 // Include GLFW
 #include <GLFW/glfw3.h>
@@ -24,7 +31,7 @@
 
 #include <glm/glm.hpp>
 
-#include <GL/glu.h>
+
 
 using namespace std;
 
@@ -45,8 +52,10 @@ private:
     mglCreateContextAttribsProc mglCreateContextAttribs;
     HDC hdc;
     HGLRC hrc;
-
-
+    GLuint vertexbuffer;
+    GLuint program;
+    RenderableVertexArray test, test1;
+    std::clock_t start, now;
     const unsigned WGL_ACCELERATION             = 0x2003;
     const unsigned WGL_COLOR_BITS               = 0x2014;
     const unsigned WGL_CONTEXT_FLAGS            = 0x2094;
@@ -79,12 +88,17 @@ public:
     bool CreateContext();
     void setFullscreen();
     void setWindowed(int, int);
+    void PreInit();
     void Init();
     void Render();
     void Update();
+    float getTime();
     Vec2d getSize();
     HDC getHdc();
     HGLRC CreateModernContext(HDC, int);
+    GLuint LoadShader(std::string, std::string);
+    bool updateUniformFloat(float, GLint, std::string);
+    bool updateUniformMat4(glm::mat4x4, GLint, std::string);
 
 
     WindowClass(string title, int mwidth, int mheight, bool console, bool fullscreen){
@@ -124,10 +138,11 @@ public:
         UpdateWindow(this->hWnd);
 
         this->Init();
-
+        this->start = std::clock();
         while(this->UpdateR()){
             this->Update();
             this->Render();
+            this->now = std::clock();
         }
     }
 
