@@ -2,12 +2,11 @@
 #define GLEW_STATIC
 
 
-#include <GL/glew.h>
-#include <GL/wglew.h>
-#include <iostream>
-#include <GL/gl.h>
 
+#include <iostream>
 #include <vector>
+
+#include "Utils.hpp"
 
 using namespace std;
 
@@ -15,10 +14,12 @@ class RenderableVertexArray{
 private:
     GLuint VertexArrayID, vertexbuffer, programID;
     float * vertexBufferData;
+    int m_Size;
     vector<float> data;
 public:
     RenderableVertexArray(float bufferData[], GLuint prID, int mSize){
         this->programID = prID;
+        this->m_Size = mSize;
 
         glGenVertexArrays(1, &this->VertexArrayID);
         glBindVertexArray(this->VertexArrayID);

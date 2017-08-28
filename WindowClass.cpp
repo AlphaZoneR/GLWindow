@@ -1,5 +1,5 @@
 #include "WindowClass.hpp"
-#include <GL/gl.h>
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
     HDC hdc;
     switch (message){
@@ -11,7 +11,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
             break;
     }
 
-    return 0;
+    return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 
@@ -85,7 +85,7 @@ bool WindowClass::InitContext(){
 
     WNDCLASS extClass = {
         CS_OWNDC,
-        DefWindowProc,
+        WndProc,
         0,
         0,
         hinst,
@@ -174,6 +174,11 @@ bool WindowClass::InitContext(){
 }
 
 
+
+
+
+
+
 HGLRC WindowClass::CreateModernContext(HDC hdc, int samples){
     HGLRC context = 0;
 
@@ -250,8 +255,9 @@ HGLRC WindowClass::CreateModernContext(HDC hdc, int samples){
 }
 
 bool WindowClass::UpdateR(){
-    SwapBuffers(this->hdc);
-    if(GetMessage(&this->msg, NULL, 0, 0)){
+
+    if(GetMessage(&this->msg, this->hWnd, 0, 0) != 0){
+        SwapBuffers(this->hdc);
         TranslateMessage(&this->msg);
         DispatchMessage(&this->msg);
         return this->running;
@@ -341,59 +347,7 @@ int WindowClass::getHeigth(){
 }
 
 
-GLuint WindowClass::LoadShader(std::string VertexShader, std::string FragmentShader){
-    GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-    GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-    GLint Result = GL_FALSE;
-    int infolen;
 
-    char const * VertexSourcePointer = VertexShader.c_str();
-    glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
-    glCompileShader(VertexShaderID);
-
-    glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
-    glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &infolen);
-    if(infolen){
-        std::vector<char> VertexShaderErrorMessage(infolen+1);
-		glGetShaderInfoLog(VertexShaderID, infolen, NULL, &VertexShaderErrorMessage[0]);
-		cout << &VertexShaderErrorMessage[0] << endl;
-    }
-
-    char const * FragmentSourcePointer = FragmentShader.c_str();
-    glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
-    glCompileShader(FragmentShaderID);
-
-    glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
-    glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &infolen);
-    if(infolen){
-        std::vector<char> FragmenShaderErrorMessage(infolen+1);
-		glGetShaderInfoLog(VertexShaderID, infolen, NULL, &FragmenShaderErrorMessage[0]);
-		cout << &FragmenShaderErrorMessage[0] << endl;
-    }
-
-    GLuint ProgramId = glCreateProgram();
-    glAttachShader(ProgramId, VertexShaderID);
-    glAttachShader(ProgramId, FragmentShaderID);
-    glLinkProgram(ProgramId);
-
-    glGetProgramiv(ProgramId, GL_LINK_STATUS, &Result);
-    glGetProgramiv(ProgramId, GL_INFO_LOG_LENGTH, &infolen);
-
-    if(infolen){
-        std::vector<char> ProgramErrorMessage(infolen+1);
-        glGetProgramInfoLog(ProgramId, infolen, NULL, &ProgramErrorMessage[0]);
-        cout << &ProgramErrorMessage[0] << endl;
-    }
-
-    glDetachShader(ProgramId, VertexShaderID);
-    glDetachShader(ProgramId, FragmentShaderID);
-
-    glDeleteShader(VertexShaderID);
-    glDeleteShader(FragmentShaderID);
-
-    return ProgramId;
-
-}
 
 
 
@@ -402,22 +356,33 @@ float WindowClass::getTime(){
 }
 
 
-bool WindowClass::updateUniformFloat(float value, GLint programID, std::string uniformName){
-    GLint loc = glGetUniformLocation(programID, uniformName.c_str());
-    if(loc >= 0){
-        glUniform1f(loc, value);
-        return 1;
+
+
+void WindowClass::mainFunc(){
+    this->start = std::clock();
+    while(true){
+        while(PeekMessage(&this->msg, this->hWnd, 0, 0, PM_REMOVE)){
+            this->now = std::clock();
+            GetCursorPos(&mouse.p);
+            ScreenToClient(this->hWnd, &mouse.p);
+            SwapBuffers(this->hdc);
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+            this->Update();
+            this->Render();
+            SetTimer(this->hWnd, 0, 0, 0);
+        }
+
+
     }
-    return 0;
 }
 
-bool WindowClass::updateUniformMat4(glm::mat4x4 lookAtMatrix, GLint programID, std::string uniformName){
-    GLint loc = glGetUniformLocation(programID, uniformName.c_str());
-    if(loc >= 0){
-        glUniformMatrix4fv(loc, 1, 0, &lookAtMatrix[0][0]);
-        return 1;
-    }
-    return 0;
+
+glm::vec3 WindowClass::generateRandomColorVector(){
+    float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    return glm::vec3(r, g, b);
 }
 
 

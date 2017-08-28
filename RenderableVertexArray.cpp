@@ -1,5 +1,5 @@
 #include "RenderableVertexArray.hpp"
-#include <iostream>
+
 
 using namespace std;
 
@@ -26,6 +26,5 @@ void RenderableVertexArray::getInfo(){
 
 
 void RenderableVertexArray::setData(GLfloat data[]){
-
 }
 

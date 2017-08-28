@@ -1,39 +1,46 @@
 #pragma once
 #define _WIN32_WINNT 0x0500
 
-#include <windows.h>
-#include <stdlib.h>
-#include <string.h>
-#include <tchar.h>
+
 #include "Utils.hpp"
 #include "RenderableVertexArray.hpp"
-#include <string>
-#include <iostream>
-#include <vector>
-#include <ctime>
-
-// Include glew
-#define GLEW_STATIC
-#include <GL/glew.h>
-#include <GL/wglew.h>
-
-
-//Include OpenGL
-#include <GL/gl.h>
-#include <GL/glext.h>
-#include <GL/glu.h>
-#include <GL/wglew.h>
-
-// Include GLFW
-#include <GLFW/glfw3.h>
-
-// Include GLM
-
-#include <glm/glm.hpp>
+#include "Texture2D.hpp"
 
 
 
 using namespace std;
+
+
+
+
+struct Mouse{
+    int x, y;
+    POINT p;
+    Mouse(){
+        this->x = 0;
+        this->y = 0;
+    }
+
+    void updateX(int m_x){
+        this->x = m_x;
+    }
+
+    void updateY(int m_y){
+        this->y = m_y;
+    }
+
+    int getX(){
+        return this->p.x;
+    }
+
+    int getY(){
+        return this->p.y;
+    }
+
+};
+
+
+
 
 class WindowClass{
 private:
@@ -55,6 +62,7 @@ private:
     GLuint vertexbuffer;
     GLuint program;
     RenderableVertexArray test, test1;
+    Texture2D d;
     std::clock_t start, now;
     const unsigned WGL_ACCELERATION             = 0x2003;
     const unsigned WGL_COLOR_BITS               = 0x2014;
@@ -76,29 +84,41 @@ private:
 public:
     std::string windowClass = "win32api";
     std::string windowTitle = "GLWindow";
+    Mouse mouse;
+
+
 
     int getHeigth();
     int getWidth();
 
-
     void CreateWCEX();
     void CreateHWND(Vec2d);
-    bool UpdateR();
-    bool InitContext();
-    bool CreateContext();
     void setFullscreen();
     void setWindowed(int, int);
     void PreInit();
     void Init();
     void Render();
     void Update();
+    void mainFunc();
+
+    bool UpdateR();
+    bool InitContext();
+    bool CreateContext();
+
+
     float getTime();
+
     Vec2d getSize();
+
     HDC getHdc();
+
     HGLRC CreateModernContext(HDC, int);
+
     GLuint LoadShader(std::string, std::string);
-    bool updateUniformFloat(float, GLint, std::string);
-    bool updateUniformMat4(glm::mat4x4, GLint, std::string);
+
+    glm::vec3 generateRandomColorVector();
+
+
 
 
     WindowClass(string title, int mwidth, int mheight, bool console, bool fullscreen){
@@ -138,12 +158,9 @@ public:
         UpdateWindow(this->hWnd);
 
         this->Init();
-        this->start = std::clock();
-        while(this->UpdateR()){
-            this->Update();
-            this->Render();
-            this->now = std::clock();
-        }
+
+
+        this->mainFunc();
     }
 
 
